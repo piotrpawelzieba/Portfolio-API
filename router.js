@@ -1,9 +1,10 @@
 const path = require('path');
+const indexVM = require('./viewModels');
 const {getPhotos, getPhotoById, getPhotoByCategory, postPhoto, deletePhoto} = require('./controllers/photoController');
 
 module.exports = function(app) {
     app.get('/', (req, res) => {
-        res.render(path.join(__dirname + '/public/index'), {Message: 'Hello World!'});
+        res.render(path.join(__dirname + '/views/pages/index'), indexVM);
 
     });
     app.get('/api/photos', getPhotos);
