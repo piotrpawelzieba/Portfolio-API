@@ -1,3 +1,5 @@
 node_modules
 *log.*
 dbConfig.js
+.vscode/launch.json
+Assets/*
