@@ -23,6 +23,6 @@ router(app);
 const PORT = process.env.PORT || 3090;
 app.listen(PORT);
 console.log('App is running on: http://localhost:' + PORT);
-open('http://localhost:3090');
+// open('http://localhost:3090');
 
 
