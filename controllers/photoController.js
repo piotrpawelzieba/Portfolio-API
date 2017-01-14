@@ -1,4 +1,7 @@
 const Photo = require('../models/Photo.js');
+const multer = require('multer');
+const fs = require('fs');
+
 
 exports.getPhotos = (req, res, next) => {
     Photo.find({}, (err, results) => {
@@ -22,11 +25,24 @@ exports.getPhotoByCategory = (req, res, next) => {
     else res.json({err: 'You did not provide a category!!!!'});
 }
 
+const savePhoto = (file) => {
+    const {path, originalname} = file;
+    const targetPath = 'Assets/uploads/' + originalname;
+
+    const src = fs.createReadStream(path);
+    const dest = fs.createWriteStream(targetPath);
+    src.pipe(dest);
+    fs.unlink(path); //deleting the tmp_path
+    return targetPath;    
+}
+
 exports.postPhoto = (req, res, next) => {
-    const {title, date, url, isPublic} = req.body;
-    
-    if(!title || !date || !url || !isPublic)
-        return res.send({error: "You did not enter all needed data!"});
+    const {title, date, url = "", isPublic, category} = req.body;
+    console.log(req.file);
+    const photoUrl = savePhoto(req.file);
+
+    if(!title)
+        return res.send({error: "You did not enter title!"});
 
     Photo.findOne({ url }, (err, existingUrl) => {
         if(err) return next(err);
@@ -34,7 +50,7 @@ exports.postPhoto = (req, res, next) => {
         if(existingUrl)
             return res.status(422).send({"error": "There is already image with such a url!"});
         
-        const photo = new Photo({ title, url, isPublic, date });
+        const photo = new Photo({ title, category, isPublic, date: new Date(), url: photoUrl });
         
         photo.save();
         res.json(photo);
@@ -51,3 +67,7 @@ exports.deletePhoto = (req, res, next) => {
     }
 
 }
+
+const upload = multer({dest: './Assets/'});
+exports.uploadFile = upload.single('file');
+    
