@@ -11,14 +11,4 @@ const PhotoSchema = new Schema({
 
 const Photo = mongoose.model("Photo", PhotoSchema);
 
-const tempPhoto = new Photo({
-    title: 'Title',
-    category: 'Weddings',
-    date: new Date(),
-    isPublic: true,
-    url: 'http://example.com/super.jpg'
-});
-
-tempPhoto.save();
-
 module.exports = Photo;
