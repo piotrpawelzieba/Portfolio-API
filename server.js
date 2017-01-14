@@ -4,9 +4,10 @@ const morgan = require('morgan');
 const open = require('open');
 const mongoose = require('mongoose');
 const ejs = require('ejs');
+const connectionString = require('./dbConfig');
 
 // db setup
-mongoose.connect('mongodb://localhost:auth/portfolio');
+mongoose.connect(connectionString);
 
 // app setup
 const app = express();
