@@ -11,8 +11,40 @@
     <body>
         <h1><%= Title %></h1>
         <h2><%= Subtitle %></h2>
-        <div id="placeholder">
-            HERE
+        <form   id="uploadForm"
+                enctype="multipart/form-data"
+                action="/api/photos"
+                method="post"
+            >
+            <p>
+                <label for="title">Title</label>
+                <input type='text' name='title'/>
+            </p>
+            <p>
+                <select name='category'>
+                    <option value="Weddings">Weddings</option>
+                    <option value="Landscapes">Landscapes</option>
+                    <option value="Portraits">Portraits</option>
+                </select>
+            </p>
+            <p>
+                <label for="isPublic">is public</label>
+                <input type="checkbox" name='isPublic'>
+            </p>
+            <p>
+                <label for="fileInput">Add file</label>
+                <input 
+                    id='fileInput' 
+                    type='file'
+                    name='file'
+                    multiple
+                     />
+            </p>
+            <input type="submit" value="submit" />
+        </form>
+        <div id="photosContainer">
+            <%- photos.map(({title, url})=>`<img src='${url}' />`).join('') %>
         </div>
+    
     </body>
 </html>
