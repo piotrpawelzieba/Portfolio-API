@@ -25,7 +25,7 @@ exports.getPhotoByCategory = (req, res, next) => {
     else res.json({err: 'You did not provide a category!!!!'});
 }
 
-const savePhoto = (file) => {
+const saveFile = (file) => {
     const {path, originalname} = file;
     const targetPath = 'Assets/uploads/' + originalname;
 
@@ -38,23 +38,25 @@ const savePhoto = (file) => {
 
 exports.postPhoto = (req, res, next) => {
     const {title, date, url = "", isPublic, category} = req.body;
-    console.log(req.file);
-    const photoUrl = savePhoto(req.file);
+    if(!req.files) res.status(400).send('You did not attach files!!');
+    req.files.forEach(file=> {
+        const filePath = saveFile(file);
 
-    if(!title)
-        return res.send({error: "You did not enter title!"});
+        if(!title)
+            return res.send({error: "You did not enter title!"});
 
-    Photo.findOne({ url }, (err, existingUrl) => {
-        if(err) return next(err);
-        
-        if(existingUrl)
-            return res.status(422).send({"error": "There is already image with such a url!"});
-        
-        const photo = new Photo({ title, category, isPublic, date: new Date(), url: photoUrl });
-        
-        photo.save();
-        res.json(photo);
+        Photo.findOne({ url }, (err, existingUrl) => {
+            if(err) return next(err);
+            
+            if(existingUrl)
+                return res.status(422).send({"error": "There is already image with such a url!"});
+            
+            const photo = new Photo({ title, category, isPublic, date: new Date(), url: filePath });
+            
+            photo.save();
+        });
     });
+    res.status(200).send('Transfer completed');
 }
 
 exports.deletePhoto = (req, res, next) => {
@@ -69,5 +71,5 @@ exports.deletePhoto = (req, res, next) => {
 }
 
 const upload = multer({dest: './Assets/'});
-exports.uploadFile = upload.single('file');
+exports.uploadFile = upload.array('file', "4");
     
