@@ -4,7 +4,7 @@ const morgan = require('morgan');
 const open = require('open');
 const mongoose = require('mongoose');
 const ejs = require('ejs');
-const connectionString = require('./dbConfig');
+const {connectionString} = require('./dbConfig');
 
 // db setup
 mongoose.connect(connectionString);
