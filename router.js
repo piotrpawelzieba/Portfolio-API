@@ -7,14 +7,16 @@ const passportService = require('./services/passport');
 const passport = require('passport');
 const requireAuth = passport.authenticate('jwt', {session: false});
 const requireSignin = passport.authenticate('local', {session: false});
-
-
+const cors = require('cors');
+options = {
+     origin: 'http://localhost:3000',
+}
 module.exports = function(app) {
     app.use('/Assets/uploads', express.static(__dirname + '/Assets/uploads'));
-    app.get('/', requireAuth, indexVM);
+    app.get('/', cors(options), indexVM);
     app.post('/api/signup', signup);
     app.post('/api/signin', requireSignin, signin);
-    app.get('/api/photos', requireAuth, getPhotos);
+    app.get('/api/photos', cors(options), getPhotos);
     app.get('/api/photos/:id', getPhotoById);
     app.get('/api/photos/:category', getPhotoByCategory);
     app.delete('/api/photos/:id', deletePhoto);
