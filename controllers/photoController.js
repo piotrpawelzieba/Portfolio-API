@@ -59,13 +59,34 @@ exports.postPhoto = (req, res, next) => {
     res.status(200).send('Transfer completed');
 }
 
+
+exports.updatePhoto = (req, res, next) => {
+    let {title, category, date, isPublic} = req.body;
+    
+    
+    let update = {}
+    update = category ? Object.assign({}, update, {category: category.toLowerCase()}) : update;
+    update = date ? Object.assign({}, update, {date}) : update;
+    update = isPublic ? Object.assign({}, update, {isPublic}) : update;
+
+    
+    if(!title) res.status(400).send();
+
+    Photo.findOneAndUpdate({title}, update, (err) => {
+        if(err) res.send({err});
+
+        res.status(204).send();
+    })
+    
+}
+
 exports.deletePhoto = (req, res, next) => {
     if(req.params.id){
         Photo.findByIdAndRemove(req.params.id, (err, results) =>{
             res.json(results);
         });
     } else {
-        res.json({err: "You didn't pass any id"});
+        res.status(400).send();
     }
 
 }
