@@ -22,10 +22,10 @@ module.exports = function(app) {
     app.get('/api/photos', cors(options), getPhotos);
     app.get('/api/photos/:id', getPhotoById);
     app.get('/api/photos/:category', getPhotoByCategory);
-    app.put('/api/photos', updatePhoto)
+    app.put('/api/photos', cors(options), updatePhoto);
     app.delete('/api/photos/:id', deletePhoto);
-    app.post('/api/photos', uploadFile, postPhoto);
-    app.get('/api/categories', cors(), getCategories);
+    app.post('/api/photos', cors(options), uploadFile, postPhoto);
+    app.get('/api/categories', cors(options), getCategories);
     app.post('/api/categories', cors(options), postCategory);
     app.put('/api/categories', updateCategory);
     app.delete('/api/categories/:title', cors(options), removeCategory);

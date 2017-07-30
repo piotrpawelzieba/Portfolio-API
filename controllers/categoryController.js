@@ -30,9 +30,9 @@ exports.updateCategory = (req, res, next) => {
     const {title, newTitle} = req.body;
      
     Category.findOneAndUpdate({title}, {title: newTitle.toLowerCase().trim()}, (err)=>{
-        if(err) res.send({err});
+        if(err) return res.send({err});
 
-        res.status(200).send();
+        return res.status(200).send();
     });
 }
 
@@ -43,19 +43,19 @@ exports.removeCategory = (req, res, next) => {
     Category.findOneAndRemove({title}, (err) => {
         
         if(err) 
-            res.send({err});
+            return res.send({err});
 
         Photo.find({category: title}, (err, results)  => {
             console.log({results});
-            if(!results.length) res.status(200).send(`Category ${title} has been successfully deleted!`);
+            if(!results.length) return res.status(200).send(`Category ${title} has been successfully deleted!`);
 
             results.forEach(({_id:id}) => {
                 Photo.findByIdAndUpdate(id, {category: null}, (err)=>{
-                    if(err) res.send({err});
+                    if(err) return res.send({err});
                     
-                    res.status(200).send(`Category ${title} has been successfully deleted!`);
                 });
             })
+            return res.status(200).send(`Category ${title} has been successfully deleted!`);
         });
 
         
