@@ -23,7 +23,7 @@ module.exports = function(app) {
     app.get('/api/photos/:id', getPhotoById);
     app.get('/api/photos/:category', getPhotoByCategory);
     app.put('/api/photos', cors(options), updatePhoto);
-    app.delete('/api/photos/:id', deletePhoto);
+    app.delete('/api/photos/:id', cors(options), deletePhoto);
     app.post('/api/photos', cors(options), uploadFile, postPhoto);
     app.get('/api/categories', cors(options), getCategories);
     app.post('/api/categories', cors(options), postCategory);
