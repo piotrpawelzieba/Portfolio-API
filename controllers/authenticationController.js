@@ -1,38 +1,40 @@
-const jwt = require('jwt-simple');
-const User = require('../models/User');
-const {secret} = require('../dbConfig');
+import jwt from 'jwt-simple';
+import User from '../models/User';
+import { secret } from '../dbConfig';
 
-const tokenForUser = ({id}) => {
-    const timestamp = new Date().getTime();
-    return jwt.encode({sub: id, iat: timestamp}, secret);
-}
+const tokenForUser = ({ id }) => {
+  const timestamp = new Date().getTime();
+  return jwt.encode({ sub: id, iat: timestamp }, secret);
+};
 
-exports.signin = (req, res, next) => {
-    res.send({ token: tokenForUser(req.user)});
-}
+export const signin = (req, res) => {
+  res.send({ token: tokenForUser(req.user) });
+};
 
-exports.signup = (req, res, next) => {
-    const {email, password} = req.body;
+export const signup = (req, res, next) => {
+  const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(422).send({ error: 'You must provide email and password'});
+  if (!email || !password) {
+    return res
+      .status(422)
+      .send({ error: 'You must provide email and password' });
+  }
+
+  User.findOne({ email }, (err, existingUser) => {
+    if (err) {
+      return next(err);
     }
 
-    User.findOne({ email }, (err, existingUser) => {
-        if (err) { return next(err); }
+    if (existingUser) {
+      return res.status(422).send({ error: 'Email is in use' });
+    }
 
+    const user = new User({ email, password });
 
-        if (existingUser) 
-            return res.status(422).send({ error: 'Email is in use' });
+    user.save(saveErr => {
+      if (saveErr) return next(saveErr);
 
-        const user = new User({ email, password });
-
-        user.save(function(err) {
-            if (err) 
-                return next(err);
-            
-            res.json({ token: tokenForUser(user) });
-        });
+      res.json({ token: tokenForUser(user) });
     });
-
-}
+  });
+};

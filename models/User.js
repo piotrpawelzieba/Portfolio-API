@@ -1,38 +1,34 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const bcrypt = require('bcrypt-nodejs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt-nodejs';
 
-const userSchema = new Schema({
+const MongooseSchema = mongoose.Schema;
+
+const userSchema = new MongooseSchema({
   email: { type: String, unique: true, lowercase: true },
-  password: String
+  password: String,
 });
 
 userSchema.pre('save', function(next) {
-    let user = this;
-    bcrypt.genSalt(10, (err, salt) => {
-        if(err) 
-            return next(err);
+  const user = this;
+  bcrypt.genSalt(10, (err, salt) => {
+    if (err) return next(err);
 
-        bcrypt.hash(user.password, salt, null, (err, hash) =>{
-            if(err) 
-                return next(err);
-            
-            user.password = hash;
-            next();
+    bcrypt.hash(user.password, salt, null, (hashErr, hash) => {
+      if (hashErr) return next(hashErr);
 
-        });
+      user.password = hash;
+      next();
     });
+  });
 });
 
 userSchema.methods.comparePassword = function(candidatePassword, callback) {
-    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
-        if(err)
-            return callback(err);
-        
-        callback(null, isMatch);
-    })
-}
+  bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
+    if (err) return callback(err);
 
-const ModelClass = mongoose.model('user', userSchema);
+    callback(null, isMatch);
+  });
+};
 
-module.exports = ModelClass;
+const ModelClass = mongoose.model('User', userSchema);
+export default ModelClass;
