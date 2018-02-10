@@ -3,3 +3,4 @@ node_modules
 dbConfig.js
 .vscode/launch.json
 Assets/*
+.editorconfig
