@@ -8,7 +8,7 @@ const tokenForUser = ({ id }) => {
 };
 
 export const signin = (req, res) => {
-  res.send({ token: tokenForUser(req.user) });
+  res.status(200).send({ token: tokenForUser(req.user) });
 };
 
 export async function signup(req, res, next) {
@@ -27,7 +27,7 @@ export async function signup(req, res, next) {
 
     const user = new User({ email, password });
     user.save();
-    return res.json({ token: tokenForUser(user) });
+    return res.status(200).json({ token: tokenForUser(user) });
   } catch (err) {
     return next(err);
   }
