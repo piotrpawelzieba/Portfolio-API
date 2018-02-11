@@ -1,73 +1,89 @@
 import Category from '../models/Category';
 import Photo from '../models/Photo';
 
-export const postCategory = (req, res, next) => {
-  let { title } = req.body;
-  const { isPrivate } = req.body;
-  title = title.trim().toLowerCase();
-  if (!title) {
-    res.status(400).send('You did not enter the title of the category!!');
-  }
+export const postCategory = async (req, res, next) => {
+  try {
+    let { title } = req.body;
+    const { isPrivate } = req.body;
 
-  Category.findOne({ title }, (err, existingCategory) => {
-    if (err) next(err);
+    if (!title) {
+      res.status(400).json('You did not enter the title of the category!!');
+    }
+
+    title = title.trim().toLowerCase();
+    const existingCategory = await Category.findOne({ title });
 
     if (existingCategory) {
       return res
         .status(422)
-        .send({ error: 'There is already category with provided title!' });
+        .json({ error: 'There is already category with provided title!' });
     }
 
     const category = new Category({ title: title.toLowerCase(), isPrivate });
-
     category.save();
-    res.status(200).send(`Category ${title} has been successfully created!`);
-  });
+    return res
+      .status(200)
+      .json(`Category ${title} has been successfully created!`);
+  } catch (err) {
+    if (err) {
+      next(err);
+    }
+  }
 };
 
-export const getCategories = (req, res) => {
-  Category.find({}, (err, results) => {
-    res.status(200).send(results);
-  });
+export const getCategories = async (req, res, next) => {
+  try {
+    const results = await Category.find({});
+    return res.status(200).json(results);
+  } catch (err) {
+    res.status(500).json(err);
+    return next(err);
+  }
 };
 
-export const updateCategory = (req, res) => {
+export const updateCategory = async (req, res) => {
   const { title, newTitle } = req.body;
 
-  Category.findOneAndUpdate(
-    { title },
-    { title: newTitle.toLowerCase().trim() },
-    err => {
-      if (err) return res.send({ err });
+  try {
+    await Category.findOneAndUpdate(
+      { title },
+      { title: newTitle.toLowerCase().trim() },
+    );
 
-      return res.status(200).send();
-    },
-  );
+    return res.status(200).json();
+  } catch (err) {
+    if (err) {
+      return res.status(500).send({ err });
+    }
+  }
 };
 
-export const removeCategory = (req, res) => {
+export const removeCategory = async (req, res, next) => {
   let { title } = req.params;
   title = title.toLowerCase().trim();
-  Category.findOneAndRemove({ title }, err => {
-    if (err) return res.send({ err });
 
-    Photo.find({ category: title }, (error, results) => {
-      if (error) return res.send({ error });
+  try {
+    const photosWithRemovedCategory = await Photo.find({ category: title });
 
-      if (!results.length) {
-        return res
-          .status(200)
-          .send(`Category ${title} has been successfully deleted!`);
-      }
+    photosWithRemovedCategory.forEach(async ({ _id: id }) => {
+      await Photo.findByIdAndUpdate(id, { category: null });
+    });
 
-      results.forEach(({ _id: id }) => {
-        Photo.findByIdAndUpdate(id, { category: null }, findErr => {
-          if (findErr) return res.send({ err: findErr });
-        });
-      });
+    if (!photosWithRemovedCategory.length) {
       return res
         .status(200)
-        .send(`Category ${title} has been successfully deleted!`);
-    });
-  });
+        .json(`Category ${title} has been successfully deleted!`);
+    }
+
+    await Category.findOneAndRemove({ title });
+
+    return res
+      .status(200)
+      .json(`Category ${title} has been successfully deleted!`);
+  } catch (err) {
+    if (err) {
+      res.send({ err });
+    }
+    next(err);
+  }
 };

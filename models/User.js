@@ -11,10 +11,14 @@ const userSchema = new MongooseSchema({
 userSchema.pre('save', function(next) {
   const user = this;
   bcrypt.genSalt(10, (err, salt) => {
-    if (err) return next(err);
+    if (err) {
+      return next(err);
+    }
 
     bcrypt.hash(user.password, salt, null, (hashErr, hash) => {
-      if (hashErr) return next(hashErr);
+      if (hashErr) {
+        return next(hashErr);
+      }
 
       user.password = hash;
       next();
@@ -24,7 +28,9 @@ userSchema.pre('save', function(next) {
 
 userSchema.methods.comparePassword = function(candidatePassword, callback) {
   bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
-    if (err) return callback(err);
+    if (err) {
+      return callback(err);
+    }
 
     callback(null, isMatch);
   });

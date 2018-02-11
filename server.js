@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import dbConfig from './dbConfig';
 import router from './router';
 
+mongoose.Promise = Promise;
 // db setup
 mongoose.connect(dbConfig.connectionString);
 

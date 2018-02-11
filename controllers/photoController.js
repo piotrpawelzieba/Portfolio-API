@@ -1,101 +1,126 @@
-import fs from 'fs';
+import fileStream from 'fs';
 import multer from 'multer';
 import Photo from '../models/Photo';
 
-export const getPhotos = (req, res) => {
-  Photo.find({}, (err, results) => {
+export const getPhotos = async (req, res, next) => {
+  try {
+    const results = await Photo.find();
     res.json(results);
-  });
+  } catch (err) {
+    res.status(500).json(err);
+    next(err);
+  }
 };
 
-export const getPhotoById = (req, res) => {
-  if (req.params.id) {
-    Photo.find({ _id: req.params.id }, (err, results) => {
-      res.json(results);
-    });
-  } else res.json({ err: 'You did not provide an id!!!!' });
+export const getPhotoById = async (req, res, next) => {
+  try {
+    if (req.params.id) {
+      const photo = await Photo.find({ _id: req.params.id });
+      return res.status(200).json(photo);
+    }
+    res.status(400).json({ err: 'You did not provide an id!!!!' });
+  } catch (err) {
+    res.status(500).json(err);
+    next(err);
+  }
 };
 
-export const getPhotoByCategory = (req, res) => {
-  if (req.params.category) {
-    Photo.find({ category: req.params.category }, (err, results) => {
-      res.json(results);
-    });
-  } else res.json({ err: 'You did not provide a category!!!!' });
+export const getPhotoByCategory = async (req, res, next) => {
+  try {
+    if (req.params.category) {
+      const results = await Photo.find({ category: req.params.category });
+      return res.status(200).json(results);
+    }
+
+    return res.status(400).json({ err: 'You did not provide a category!!!!' });
+  } catch (err) {
+    res.status(500).json(err);
+    next(err);
+  }
 };
 
 const saveFile = file => {
   const { path, originalname } = file;
   const targetPath = `Assets/uploads/${originalname}`;
-
-  const src = fs.createReadStream(path);
-  const dest = fs.createWriteStream(targetPath);
+  const src = fileStream.createReadStream(path);
+  const dest = fileStream.createWriteStream(targetPath);
   src.pipe(dest);
-  fs.unlink(path); // deleting the tmp_path
+  fileStream.unlink(path); // deleting the tmp_path
   return targetPath;
 };
 
-export const postPhoto = (req, res, next) => {
-  const { title, url = '', isPublic, category } = req.body;
+export const postPhoto = async (req, res, next) => {
+  try {
+    const { title, url = '', isPublic, category } = req.body;
 
-  if (!req.files) return res.status(400).send('You did not attach files!!');
+    if (!req.files) {
+      return res.status(400).send('You did not attach files!!');
+    } else if (!title) {
+      return res.status(400).send({ error: 'You did not enter title!' });
+    }
 
-  const paths = req.files.map(file => {
+    const [file] = req.files || [];
     const filePath = saveFile(file);
+    const existingUrl = await Photo.findOne({ url });
 
-    if (!title) return res.send({ error: 'You did not enter title!' });
+    if (existingUrl) {
+      return res
+        .status(422)
+        .json({ error: 'There is already image with such a url!' });
+    }
 
-    Photo.findOne({ url }, (err, existingUrl) => {
-      if (err) return next(err);
-
-      if (existingUrl) {
-        return res
-          .status(422)
-          .send({ error: 'There is already image with such a url!' });
-      }
-
-      const photo = new Photo({
-        title,
-        category,
-        isPublic,
-        date: new Date(),
-        url: filePath,
-      });
-
-      photo.save();
+    const photo = new Photo({
+      title,
+      category,
+      isPublic,
+      date: new Date(),
+      url: filePath,
     });
-
-    return { url: filePath, title, category };
-  });
-  return res.status(200).send(paths);
+    photo.save();
+    return res.status(200).json({ url: filePath, title, category });
+  } catch (error) {
+    res.status(500).json(error);
+    return next(error);
+  }
 };
 
-export const updatePhoto = (req, res) => {
-  const { id, category, date, isPublic } = req.body;
+export const updatePhoto = async (req, res, next) => {
+  try {
+    const { id, ...body } = req.body;
+    const possibleKeys = ['title', 'category', 'url'];
+    const photo = Object.keys(body).reduce(
+      (acc, currentKey) =>
+        possibleKeys.includes(currentKey)
+          ? {
+              ...acc,
+              [currentKey]: req.body[currentKey],
+            }
+          : acc,
+      {},
+    );
 
-  let update = {};
-  update = category
-    ? Object.assign({}, update, { category: category.toLowerCase() })
-    : update;
-  update = date ? Object.assign({}, update, { date }) : update;
-  update = isPublic ? Object.assign({}, update, { isPublic }) : update;
+    if (!id) {
+      return res.status(400).send();
+    }
 
-  if (!id) return res.status(400).send();
-
-  Photo.findOneAndUpdate({ _id: id }, update, err => {
-    if (err) return res.send({ err });
-
-    return res.status(204).send();
-  });
+    await Photo.findOneAndUpdate({ _id: id }, photo);
+    return res.status(204).json();
+  } catch (error) {
+    res.status(500).json({ error });
+    return next(error);
+  }
 };
 
-export const deletePhoto = (req, res) => {
-  if (req.params.id) {
-    Photo.findByIdAndRemove(req.params.id, (err, results) => {
-      res.json(results);
-    });
-  } else {
-    res.status(400).send();
+export const deletePhoto = async (req, res, next) => {
+  try {
+    if (req.params.id) {
+      await Photo.findByIdAndRemove(req.params.id);
+      return res.status(200).json();
+    }
+    return res.status(400).json('You did not provide id');
+  } catch (error) {
+    res.status(500).json({ error });
+    return next(error);
   }
 };
 
