@@ -15,7 +15,6 @@
   "author": "piotr zieba",
   "license": "ISC",
   "dependencies": {
-    "babel-cli": "^6.18.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.2",
     "brace-expansion": "^1.1.11",
@@ -34,7 +33,10 @@
     "passport-local": "^1.0.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "babel-preset-es2017": "^6.24.1",
     "eslint": "^4.17.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-prettier": "^2.9.0",

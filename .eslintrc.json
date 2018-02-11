@@ -10,6 +10,8 @@
         "printWidth": 80
       }
     ],
+    "singleQuote": true,
+    "curly": ["error", "all"],
     "consistent-return": "off",
     "func-names": "off",
     "prefer-destructuring": "off"
