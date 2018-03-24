@@ -58,7 +58,7 @@ export const updateCategory = async (req, res) => {
   }
 };
 
-export const removeCategory = async (req, res, next) => {
+export const removeCategory = async (req, res) => {
   let { title } = req.params;
   title = title.toLowerCase().trim();
 
@@ -81,9 +81,6 @@ export const removeCategory = async (req, res, next) => {
       .status(200)
       .json(`Category ${title} has been successfully deleted!`);
   } catch (err) {
-    if (err) {
-      res.send({ err });
-    }
-    next(err);
+    return res.status(500).send({ err });
   }
 };

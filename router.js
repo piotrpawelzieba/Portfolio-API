@@ -22,7 +22,7 @@ import passportService from './services/passport';
 
 passportService();
 
-passport.authenticate('jwt', { session: false });
+const requireJwt = passport.authenticate('jwt', { session: false });
 const requireSignin = passport.authenticate('local', { session: false });
 
 const options = {
@@ -36,7 +36,7 @@ export default function router(app) {
   app.get('/', cors(options), indexVM);
   app.post('/api/signup', signup);
   app.post('/api/signin', requireSignin, signin);
-  app.get('/api/photos', cors(options), getPhotos);
+  app.get('/api/photos', cors(options), requireJwt, getPhotos);
   app.get('/api/photos/:id', getPhotoById);
   app.get('/api/photos/:category', getPhotoByCategory);
   app.put('/api/photos', cors(options), updatePhoto);
