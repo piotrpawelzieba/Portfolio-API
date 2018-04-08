@@ -36,7 +36,7 @@ export default function router(app) {
   app.get('/', cors(options), indexVM);
   app.post('/api/signup', signup);
   app.post('/api/signin', requireSignin, signin);
-  app.get('/api/photos', cors(options), requireJwt, getPhotos);
+  app.get('/api/photos', cors(options), getPhotos);
   app.get('/api/photos/:id', getPhotoById);
   app.get('/api/photos/:category', getPhotoByCategory);
   app.put('/api/photos', cors(options), updatePhoto);

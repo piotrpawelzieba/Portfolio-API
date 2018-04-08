@@ -69,12 +69,6 @@ export const removeCategory = async (req, res) => {
       await Photo.findByIdAndUpdate(id, { category: null });
     });
 
-    if (!photosWithRemovedCategory.length) {
-      return res
-        .status(200)
-        .json(`Category ${title} has been successfully deleted!`);
-    }
-
     await Category.findOneAndRemove({ title });
 
     return res
